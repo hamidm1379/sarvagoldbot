@@ -1,0 +1,10 @@
+.env
+*.log
+*.cache
+vendor/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
