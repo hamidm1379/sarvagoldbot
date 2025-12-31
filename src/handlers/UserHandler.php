@@ -320,6 +320,15 @@ class UserHandler
 
     private function handleState($text, $telegramId, $state)
     {
+        // Check for back button first, regardless of state
+        if ($text === '🔙 بازگشت') {
+            $this->clearUserState($telegramId);
+            $adminModel = new \GoldSalekBot\Models\Admin();
+            $isAdmin = $adminModel->isAdmin($telegramId);
+            $this->showMainMenu($isAdmin);
+            return;
+        }
+
         if ($state === 'waiting_product_code') {
             $this->searchProductByCode($text);
             $this->clearUserState($telegramId);
