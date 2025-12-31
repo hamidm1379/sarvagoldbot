@@ -7,10 +7,64 @@ use GoldSalekBot\Database;
 class WeightRange
 {
     private $db;
+    private static $tableCreated = false;
 
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->ensureTableExists();
+    }
+
+    private function ensureTableExists()
+    {
+        if (self::$tableCreated) {
+            return;
+        }
+
+        try {
+            $this->db->query("SELECT 1 FROM weight_ranges LIMIT 1");
+            self::$tableCreated = true;
+        } catch (\PDOException $e) {
+            if (strpos($e->getMessage(), "doesn't exist") !== false || 
+                strpos($e->getMessage(), 'Base table or view not found') !== false) {
+                $this->createTable();
+                self::$tableCreated = true;
+            } else {
+                throw $e;
+            }
+        }
+    }
+
+    private function createTable()
+    {
+        // Ensure categories and collections tables exist first
+        $categoryModel = new Category();
+        $collectionModel = new Collection();
+        
+        $sql = "
+        CREATE TABLE IF NOT EXISTS `weight_ranges` (
+          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+          `name` VARCHAR(255) NOT NULL,
+          `min_weight` DECIMAL(10,2) NOT NULL,
+          `max_weight` DECIMAL(10,2) NOT NULL,
+          `category_id` INT(11) UNSIGNED DEFAULT NULL,
+          `collection_id` INT(11) UNSIGNED DEFAULT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (`id`),
+          INDEX `idx_category_id` (`category_id`),
+          INDEX `idx_collection_id` (`collection_id`),
+          INDEX `idx_weight_range` (`min_weight`, `max_weight`),
+          FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
+          FOREIGN KEY (`collection_id`) REFERENCES `collections`(`id`) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+        
+        $connection = $this->db->getConnection();
+        $connection->exec("SET NAMES utf8mb4");
+        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+        $connection->exec($sql);
+        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
     }
 
     public function getAll($categoryId = null, $collectionId = null)
