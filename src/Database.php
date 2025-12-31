@@ -5,6 +5,11 @@ namespace GoldSalekBot;
 use PDO;
 use PDOException;
 
+/**
+ * Database Connection Class
+ * Supports MariaDB and MySQL (MariaDB compatible)
+ * Uses PDO with mysql driver which works with both MySQL and MariaDB
+ */
 class Database
 {
     private static $instance = null;
@@ -18,6 +23,7 @@ class Database
         $password = getenv('DB_PASS') ?: '';
         $charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
+        // MariaDB/MySQL compatible DSN (mysql: driver works with both)
         $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
         
         $options = [

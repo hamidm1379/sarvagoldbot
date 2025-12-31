@@ -1,5 +1,6 @@
 -- Gold Salek Telegram Bot Database Schema
 -- Persian (RTL) Support with UTF8MB4
+-- Compatible with MariaDB 10.3+ and MySQL 5.7+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

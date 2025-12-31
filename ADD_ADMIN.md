@@ -16,9 +16,11 @@ php scripts/add_admin.php 8504577397 admin
 
 ```bash
 mysql -u root -p gold_salek_bot < database/add_admin.sql
+# یا
+mariadb -u root -p gold_salek_bot < database/add_admin.sql
 ```
 
-یا مستقیماً در MySQL:
+یا مستقیماً در MariaDB:
 
 ```sql
 USE gold_salek_bot;

@@ -38,7 +38,8 @@ echo "Host: {$host}\n";
 echo "User: {$username}\n\n";
 
 try {
-    // Connect to the database
+    // Connect to MariaDB/MySQL database
+    // Note: mysql: DSN works with both MySQL and MariaDB
     $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
     $pdo = new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

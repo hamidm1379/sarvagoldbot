@@ -80,7 +80,7 @@
 ## 🔧 تکنولوژی‌ها
 
 - **PHP 8.0+**
-- **MySQL 5.7+**
+- **MariaDB 10.3+** (یا MySQL 5.7+)
 - **PDO** با Prepared Statements
 - **Telegram Bot API**
 - **cURL** برای ارتباط با API

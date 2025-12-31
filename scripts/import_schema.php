@@ -37,7 +37,8 @@ echo "Database: {$dbname}\n";
 echo "Host: {$host}\n\n";
 
 try {
-    // Connect to MySQL (without database)
+    // Connect to MariaDB/MySQL (without database)
+    // Note: mysql: DSN works with both MySQL and MariaDB
     $dsn = "mysql:host={$host};charset={$charset}";
     $pdo = new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

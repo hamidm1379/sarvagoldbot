@@ -16,7 +16,7 @@
 ## نیازمندی‌ها
 
 - PHP 8.0 یا بالاتر
-- MySQL 5.7 یا بالاتر
+- MariaDB 10.3 یا بالاتر (یا MySQL 5.7+)
 - cURL extension
 - PDO extension
 - دسترسی به VPS با Linux
@@ -34,8 +34,10 @@ cd goldSalek
 ### 2. تنظیمات پایگاه داده
 
 ```bash
-# وارد MySQL شوید
+# وارد MariaDB شوید
 mysql -u root -p
+# یا اگر از MariaDB استفاده می‌کنید:
+# mariadb -u root -p
 
 # پایگاه داده و کاربر ایجاد کنید
 CREATE DATABASE gold_salek_bot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -46,6 +48,8 @@ EXIT;
 
 # وارد کردن اسکیما
 mysql -u goldbot_user -p gold_salek_bot < database/schema.sql
+# یا
+mariadb -u goldbot_user -p gold_salek_bot < database/schema.sql
 ```
 
 ### 3. تنظیم فایل .env
@@ -146,7 +150,7 @@ server {
 
 ### 7. اضافه کردن مدیر
 
-برای اضافه کردن خودتان به عنوان مدیر، وارد MySQL شوید:
+برای اضافه کردن خودتان به عنوان مدیر، وارد MariaDB شوید:
 
 ```sql
 USE gold_salek_bot;

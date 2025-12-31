@@ -4,27 +4,34 @@
 
 - سرور Linux (Ubuntu/Debian)
 - PHP 8.0 یا بالاتر
-- MySQL 5.7 یا بالاتر
+- MariaDB 10.3 یا بالاتر (یا MySQL 5.7+)
 - Nginx یا Apache
 - دسترسی root یا sudo
 
 ## مراحل نصب
 
-### 1. نصب PHP و MySQL
+### 1. نصب PHP و MariaDB
 
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install php8.0 php8.0-fpm php8.0-mysql php8.0-curl php8.0-mbstring mysql-server nginx -y
+sudo apt install php8.0 php8.0-fpm php8.0-mysql php8.0-curl php8.0-mbstring mariadb-server mariadb-client nginx -y
+
+# راه‌اندازی MariaDB
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
+sudo mysql_secure_installation
 ```
 
 ### 2. ایجاد پایگاه داده
 
 ```bash
 sudo mysql -u root -p
+# یا
+sudo mariadb -u root -p
 ```
 
-در MySQL:
+در MariaDB:
 
 ```sql
 CREATE DATABASE gold_salek_bot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -134,6 +141,8 @@ curl "https://api.telegram.org/bot8568469873:AAHlLjYzI4FJVLK1NX_dbBHtf_bTI2kSjc4
 
 ```bash
 sudo mysql -u root -p gold_salek_bot
+# یا
+sudo mariadb -u root -p gold_salek_bot
 ```
 
 ```sql
@@ -160,8 +169,10 @@ sudo tail -f /var/log/php8.0-fpm.log
 # لاگ Nginx
 sudo tail -f /var/log/nginx/error.log
 
-# لاگ MySQL
+# لاگ MariaDB
 sudo tail -f /var/log/mysql/error.log
+# یا
+sudo journalctl -u mariadb -f
 ```
 
 ### تست اتصال به پایگاه داده
@@ -206,7 +217,7 @@ tar -czf goldSalek_backup_$(date +%Y%m%d).tar.gz /var/www/html/goldSalek
 ## امنیت
 
 1. فایل `.env` را در `.gitignore` قرار دهید
-2. از رمز عبور قوی برای MySQL استفاده کنید
+2. از رمز عبور قوی برای MariaDB استفاده کنید
 3. SSL را فعال کنید
 4. فایروال را تنظیم کنید:
 

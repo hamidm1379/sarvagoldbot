@@ -26,13 +26,15 @@ DEBUG_MODE=true
 2. **اسکیما را وارد کنید:**
    ```bash
    mysql -u root -p gold_salek_bot < database/schema.sql
+   # یا
+   mariadb -u root -p gold_salek_bot < database/schema.sql
    ```
 
 3. **یا از phpMyAdmin:**
    - ایجاد پایگاه داده `gold_salek_bot`
    - Import فایل `database/schema.sql`
 
-## اگر رمز عبور MySQL دارید
+## اگر رمز عبور MariaDB دارید
 
 فایل `.env` را ویرایش کنید و `DB_PASS` را تنظیم کنید:
 

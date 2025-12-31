@@ -7,7 +7,7 @@
 #### مرحله 1: نصب XAMPP یا WAMP
 
 1. دانلود و نصب [XAMPP](https://www.apachefriends.org/) یا [WAMP](https://www.wampserver.com/)
-2. فعال کردن Apache و MySQL در کنترل پنل
+2. فعال کردن Apache و MariaDB/MySQL در کنترل پنل
 
 #### مرحله 2: کپی کردن فایل‌ها
 
@@ -135,15 +135,21 @@ scp -r d:\BOTS\goldSalek user@your-server:/var/www/html/
 ssh user@your-server
 cd /var/www/html/goldSalek
 
-# نصب PHP و MySQL (اگر نصب نشده)
+# نصب PHP و MariaDB (اگر نصب نشده)
 sudo apt update
-sudo apt install php8.0 php8.0-fpm php8.0-mysql php8.0-curl mysql-server -y
+sudo apt install php8.0 php8.0-fpm php8.0-mysql php8.0-curl mariadb-server mariadb-client -y
+
+# راه‌اندازی MariaDB
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
 ```
 
 ### مرحله 3: تنظیم پایگاه داده
 
 ```bash
 sudo mysql -u root -p
+# یا
+sudo mariadb -u root -p
 ```
 
 ```sql
@@ -156,6 +162,8 @@ EXIT;
 
 ```bash
 mysql -u goldbot -p gold_salek_bot < database/schema.sql
+# یا
+mariadb -u goldbot -p gold_salek_bot < database/schema.sql
 ```
 
 ### مرحله 4: تنظیم .env
@@ -290,6 +298,8 @@ php scripts/add_admin.php 8504577397 admin
 2. تست اتصال:
    ```bash
    mysql -u goldbot -p gold_salek_bot -e "SELECT 1;"
+   # یا
+   mariadb -u goldbot -p gold_salek_bot -e "SELECT 1;"
    ```
 
 ### خطای 404 در Webhook

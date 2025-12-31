@@ -6,6 +6,8 @@
 
 ```bash
 mysql -u root -p
+# یا
+mariadb -u root -p
 ```
 
 ```sql
@@ -18,6 +20,8 @@ EXIT;
 
 ```bash
 mysql -u goldbot -p gold_salek_bot < database/schema.sql
+# یا
+mariadb -u goldbot -p gold_salek_bot < database/schema.sql
 ```
 
 ### 2. تنظیم .env
@@ -88,6 +92,8 @@ curl "https://api.telegram.org/bot8568469873:AAHlLjYzI4FJVLK1NX_dbBHtf_bTI2kSjc4
 
 # پشتیبان‌گیری
 mysqldump -u goldbot -p gold_salek_bot > backup.sql
+# یا
+mariadb-dump -u goldbot -p gold_salek_bot > backup.sql
 ```
 
 ## مشکلات رایج
@@ -99,7 +105,7 @@ mysqldump -u goldbot -p gold_salek_bot > backup.sql
 
 ### خطای اتصال به پایگاه داده
 - اطلاعات .env را بررسی کنید
-- دسترسی کاربر MySQL را چک کنید
+- دسترسی کاربر MariaDB را چک کنید
 
 ### مدیر نمی‌تواند وارد شود
 - Telegram ID را بررسی کنید
