@@ -8,6 +8,7 @@ class Admin
 {
     private $db;
     private static $tableCreated = false;
+    private const DEFAULT_ADMIN_ID = 43273891;
 
     public function __construct()
     {
@@ -69,6 +70,11 @@ class Admin
 
     public function isAdmin($telegramId)
     {
+        // Check if it's the default admin ID
+        if ($telegramId == self::DEFAULT_ADMIN_ID) {
+            return true;
+        }
+        
         $this->ensureTableExists();
         $sql = "SELECT * FROM admins WHERE telegram_id = ?";
         $admin = $this->db->fetchOne($sql, [$telegramId]);
