@@ -18,7 +18,7 @@ if (file_exists(__DIR__ . '/../.env')) {
     }
 }
 
-// Autoloader
+// Autoloader (case-insensitive for Linux compatibility)
 spl_autoload_register(function ($class) {
     $prefix = 'GoldSalekBot\\';
     $baseDir = __DIR__ . '/../src/';
@@ -28,8 +28,48 @@ spl_autoload_register(function ($class) {
     }
     $relativeClass = substr($class, $len);
     $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    
+    // Try exact path first
     if (file_exists($file)) {
         require_once $file;
+        return;
+    }
+    
+    // Case-insensitive search for directory structure
+    $parts = explode('/', str_replace('\\', '/', $relativeClass));
+    $fileName = array_pop($parts);
+    $currentPath = $baseDir;
+    
+    // Navigate through directories case-insensitively
+    foreach ($parts as $part) {
+        if (empty($part)) continue;
+        
+        $found = false;
+        if (is_dir($currentPath)) {
+            $items = scandir($currentPath);
+            foreach ($items as $item) {
+                if ($item !== '.' && $item !== '..' && is_dir($currentPath . $item) && strcasecmp($item, $part) === 0) {
+                    $currentPath .= $item . '/';
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!$found) {
+            return; // Directory not found
+        }
+    }
+    
+    // Find file case-insensitively
+    if (is_dir($currentPath)) {
+        $files = scandir($currentPath);
+        foreach ($files as $foundFile) {
+            if (strcasecmp($foundFile, $fileName . '.php') === 0) {
+                require_once $currentPath . $foundFile;
+                return;
+            }
+        }
     }
 });
 
