@@ -37,43 +37,48 @@ class Product
 
     private function createTable()
     {
-        // Ensure categories and collections tables exist first
-        $categoryModel = new Category();
-        $collectionModel = new Collection();
-        
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `products` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `product_code` INT(11) UNSIGNED NOT NULL UNIQUE,
-          `name` VARCHAR(255) NOT NULL,
-          `image_file_id` VARCHAR(255) DEFAULT NULL,
-          `image_path` VARCHAR(500) DEFAULT NULL,
-          `video_file_id` VARCHAR(255) DEFAULT NULL,
-          `animation_file_id` VARCHAR(255) DEFAULT NULL,
-          `category_id` INT(11) UNSIGNED NOT NULL,
-          `collection_id` INT(11) UNSIGNED DEFAULT NULL,
-          `wage_percentage` DECIMAL(5,2) NOT NULL,
-          `weight` DECIMAL(10,2) NOT NULL,
-          `status` ENUM('active', 'inactive') DEFAULT 'active',
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          UNIQUE KEY `unique_product_code` (`product_code`),
-          INDEX `idx_category_id` (`category_id`),
-          INDEX `idx_collection_id` (`collection_id`),
-          INDEX `idx_status` (`status`),
-          INDEX `idx_wage_percentage` (`wage_percentage`),
-          INDEX `idx_weight` (`weight`),
-          FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE RESTRICT,
-          FOREIGN KEY (`collection_id`) REFERENCES `collections`(`id`) ON DELETE SET NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            // Ensure categories and collections tables exist first
+            $categoryModel = new Category();
+            $collectionModel = new Collection();
+            
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `products` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `product_code` INT(11) UNSIGNED NOT NULL UNIQUE,
+              `name` VARCHAR(255) NOT NULL,
+              `image_file_id` VARCHAR(255) DEFAULT NULL,
+              `image_path` VARCHAR(500) DEFAULT NULL,
+              `video_file_id` VARCHAR(255) DEFAULT NULL,
+              `animation_file_id` VARCHAR(255) DEFAULT NULL,
+              `category_id` INT(11) UNSIGNED NOT NULL,
+              `collection_id` INT(11) UNSIGNED DEFAULT NULL,
+              `wage_percentage` DECIMAL(5,2) NOT NULL,
+              `weight` DECIMAL(10,2) NOT NULL,
+              `status` ENUM('active', 'inactive') DEFAULT 'active',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              UNIQUE KEY `unique_product_code` (`product_code`),
+              INDEX `idx_category_id` (`category_id`),
+              INDEX `idx_collection_id` (`collection_id`),
+              INDEX `idx_status` (`status`),
+              INDEX `idx_wage_percentage` (`wage_percentage`),
+              INDEX `idx_weight` (`weight`),
+              FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE RESTRICT,
+              FOREIGN KEY (`collection_id`) REFERENCES `collections`(`id`) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create products table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function findByCode($code)

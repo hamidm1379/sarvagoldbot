@@ -37,30 +37,35 @@ class User
 
     private function createTable()
     {
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `users` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `telegram_id` BIGINT(20) UNSIGNED NOT NULL UNIQUE,
-          `first_name` VARCHAR(255) NOT NULL,
-          `last_name` VARCHAR(255) NOT NULL,
-          `internal_id` VARCHAR(50) NOT NULL UNIQUE,
-          `status` ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
-          `level` ENUM('general', 'vip', 'level1', 'level2', 'level3', 'level4') DEFAULT 'general',
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          INDEX `idx_telegram_id` (`telegram_id`),
-          INDEX `idx_internal_id` (`internal_id`),
-          INDEX `idx_status` (`status`),
-          INDEX `idx_level` (`level`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `users` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `telegram_id` BIGINT(20) UNSIGNED NOT NULL UNIQUE,
+              `first_name` VARCHAR(255) NOT NULL,
+              `last_name` VARCHAR(255) NOT NULL,
+              `internal_id` VARCHAR(50) NOT NULL UNIQUE,
+              `status` ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+              `level` ENUM('general', 'vip', 'level1', 'level2', 'level3', 'level4') DEFAULT 'general',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              INDEX `idx_telegram_id` (`telegram_id`),
+              INDEX `idx_internal_id` (`internal_id`),
+              INDEX `idx_status` (`status`),
+              INDEX `idx_level` (`level`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create users table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function findByTelegramId($telegramId)

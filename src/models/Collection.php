@@ -37,28 +37,33 @@ class Collection
 
     private function createTable()
     {
-        // Ensure categories table exists first
-        $categoryModel = new Category();
-        
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `collections` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `name` VARCHAR(255) NOT NULL UNIQUE,
-          `category_id` INT(11) UNSIGNED DEFAULT NULL,
-          `wage_percentage` DECIMAL(5,2) DEFAULT NULL,
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          INDEX `idx_category_id` (`category_id`),
-          INDEX `idx_wage_percentage` (`wage_percentage`),
-          FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            // Ensure categories table exists first
+            $categoryModel = new Category();
+            
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `collections` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `name` VARCHAR(255) NOT NULL UNIQUE,
+              `category_id` INT(11) UNSIGNED DEFAULT NULL,
+              `wage_percentage` DECIMAL(5,2) DEFAULT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              INDEX `idx_category_id` (`category_id`),
+              INDEX `idx_wage_percentage` (`wage_percentage`),
+              FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create collections table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function getAll($categoryId = null)

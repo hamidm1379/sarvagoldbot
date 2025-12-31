@@ -37,22 +37,27 @@ class Category
 
     private function createTable()
     {
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `categories` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `name` VARCHAR(255) NOT NULL UNIQUE,
-          `sort_order` INT(11) DEFAULT 0,
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          INDEX `idx_sort_order` (`sort_order`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `categories` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `name` VARCHAR(255) NOT NULL UNIQUE,
+              `sort_order` INT(11) DEFAULT 0,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              INDEX `idx_sort_order` (`sort_order`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create categories table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function getAll()

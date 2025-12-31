@@ -37,34 +37,39 @@ class WageRange
 
     private function createTable()
     {
-        // Ensure categories and collections tables exist first
-        $categoryModel = new Category();
-        $collectionModel = new Collection();
-        
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `wage_ranges` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `name` VARCHAR(255) NOT NULL,
-          `min_wage` DECIMAL(6,2) NOT NULL,
-          `max_wage` DECIMAL(6,2) NOT NULL,
-          `category_id` INT(11) UNSIGNED DEFAULT NULL,
-          `collection_id` INT(11) UNSIGNED DEFAULT NULL,
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          INDEX `idx_category_id` (`category_id`),
-          INDEX `idx_collection_id` (`collection_id`),
-          INDEX `idx_wage_range` (`min_wage`, `max_wage`),
-          FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
-          FOREIGN KEY (`collection_id`) REFERENCES `collections`(`id`) ON DELETE SET NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            // Ensure categories and collections tables exist first
+            $categoryModel = new Category();
+            $collectionModel = new Collection();
+            
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `wage_ranges` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `name` VARCHAR(255) NOT NULL,
+              `min_wage` DECIMAL(6,2) NOT NULL,
+              `max_wage` DECIMAL(6,2) NOT NULL,
+              `category_id` INT(11) UNSIGNED DEFAULT NULL,
+              `collection_id` INT(11) UNSIGNED DEFAULT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              INDEX `idx_category_id` (`category_id`),
+              INDEX `idx_collection_id` (`collection_id`),
+              INDEX `idx_wage_range` (`min_wage`, `max_wage`),
+              FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
+              FOREIGN KEY (`collection_id`) REFERENCES `collections`(`id`) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create wage_ranges table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function getAll($categoryId = null, $collectionId = null)

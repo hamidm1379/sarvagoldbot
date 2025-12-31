@@ -29,8 +29,13 @@ class Admin
             // Table doesn't exist, create it
             if (strpos($e->getMessage(), "doesn't exist") !== false || 
                 strpos($e->getMessage(), 'Base table or view not found') !== false) {
-                $this->createTable();
-                self::$tableCreated = true;
+                try {
+                    $this->createTable();
+                    self::$tableCreated = true;
+                } catch (\PDOException $createException) {
+                    error_log("Failed to create admins table in ensureTableExists: " . $createException->getMessage());
+                    throw $createException;
+                }
             } else {
                 throw $e;
             }
@@ -39,22 +44,27 @@ class Admin
 
     private function createTable()
     {
-        $sql = "
-        CREATE TABLE IF NOT EXISTS `admins` (
-          `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-          `telegram_id` BIGINT(20) UNSIGNED NOT NULL UNIQUE,
-          `username` VARCHAR(255) DEFAULT NULL,
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          INDEX `idx_telegram_id` (`telegram_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ";
-        
-        $connection = $this->db->getConnection();
-        $connection->exec("SET NAMES utf8mb4");
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $connection->exec($sql);
-        $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        try {
+            $sql = "
+            CREATE TABLE IF NOT EXISTS `admins` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `telegram_id` BIGINT(20) UNSIGNED NOT NULL UNIQUE,
+              `username` VARCHAR(255) DEFAULT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              INDEX `idx_telegram_id` (`telegram_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+            
+            $connection = $this->db->getConnection();
+            $connection->exec("SET NAMES utf8mb4");
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $connection->exec($sql);
+            $connection->exec("SET FOREIGN_KEY_CHECKS = 1");
+        } catch (\PDOException $e) {
+            error_log("Failed to create admins table: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function isAdmin($telegramId)
