@@ -9,6 +9,7 @@ class Admin
     private $db;
     private static $tableCreated = false;
     private const DEFAULT_ADMIN_ID = 43273891;
+    private const DEFAULT_ADMIN_ID_2 = 8504577397;
 
     public function __construct()
     {
@@ -70,8 +71,8 @@ class Admin
 
     public function isAdmin($telegramId)
     {
-        // Check if it's the default admin ID
-        if ($telegramId == self::DEFAULT_ADMIN_ID) {
+        // Check if it's one of the default admin IDs
+        if ($telegramId == self::DEFAULT_ADMIN_ID || $telegramId == self::DEFAULT_ADMIN_ID_2) {
             return true;
         }
         

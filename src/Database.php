@@ -14,30 +14,65 @@ class Database
 {
     private static $instance = null;
     private $connection;
+    private $host;
+    private $dbname;
+    private $username;
+    private $password;
+    private $charset;
 
     private function __construct()
     {
-        $host = getenv('DB_HOST') ?: 'localhost';
-        $dbname = getenv('DB_NAME') ?: 'gold_salek_bot';
-        $username = getenv('DB_USER') ?: 'root';
-        $password = getenv('DB_PASS') ?: '';
-        $charset = getenv('DB_CHARSET') ?: 'utf8mb4';
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->dbname = getenv('DB_NAME') ?: 'gold_salek_bot';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASS') ?: '';
+        $this->charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
+        $this->connect();
+    }
+
+    private function connect()
+    {
         // MariaDB/MySQL compatible DSN (mysql: driver works with both)
-        $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
+        $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset={$this->charset}";
         
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$charset}"
+            PDO::ATTR_PERSISTENT => false, // Don't use persistent connections to avoid stale connections
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset}",
+            PDO::MYSQL_ATTR_RECONNECT => true // Enable auto-reconnect
         ];
 
         try {
-            $this->connection = new PDO($dsn, $username, $password, $options);
+            $this->connection = new PDO($dsn, $this->username, $this->password, $options);
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
             throw new \Exception("Database connection failed");
+        }
+    }
+
+    private function isConnected()
+    {
+        try {
+            if ($this->connection === null) {
+                return false;
+            }
+            // Try a simple query to check if connection is alive
+            // Use direct PDO query to avoid recursion
+            $this->connection->query("SELECT 1")->closeCursor();
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function ensureConnection()
+    {
+        if (!$this->isConnected()) {
+            error_log("Database connection lost, attempting to reconnect...");
+            $this->connect();
         }
     }
 
@@ -51,18 +86,41 @@ class Database
 
     public function getConnection()
     {
+        $this->ensureConnection();
         return $this->connection;
     }
 
     public function query($sql, $params = [])
     {
-        try {
-            $stmt = $this->connection->prepare($sql);
-            $stmt->execute($params);
-            return $stmt;
-        } catch (PDOException $e) {
-            error_log("Database query error: " . $e->getMessage());
-            throw $e;
+        $maxRetries = 2;
+        $retryCount = 0;
+
+        while ($retryCount <= $maxRetries) {
+            try {
+                $this->ensureConnection();
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute($params);
+                return $stmt;
+            } catch (PDOException $e) {
+                $errorMessage = $e->getMessage();
+                
+                // Check if it's a "MySQL server has gone away" error
+                if (strpos($errorMessage, '2006') !== false || 
+                    strpos($errorMessage, 'MySQL server has gone away') !== false ||
+                    strpos($errorMessage, 'Lost connection') !== false) {
+                    
+                    if ($retryCount < $maxRetries) {
+                        error_log("Database connection lost, retrying... (Attempt " . ($retryCount + 1) . "/{$maxRetries})");
+                        $this->connection = null; // Force reconnection
+                        $this->connect();
+                        $retryCount++;
+                        continue;
+                    }
+                }
+                
+                error_log("Database query error: " . $errorMessage);
+                throw $e;
+            }
         }
     }
 
@@ -80,6 +138,7 @@ class Database
 
     public function lastInsertId()
     {
+        $this->ensureConnection();
         return $this->connection->lastInsertId();
     }
 }
