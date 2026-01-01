@@ -102,19 +102,28 @@ class Database
                 return $stmt;
             } catch (PDOException $e) {
                 $errorMessage = $e->getMessage();
+                $errorCode = $e->getCode();
                 
-                // Check if it's a "MySQL server has gone away" error
-                if (strpos($errorMessage, '2006') !== false || 
+                // Check if it's a connection lost error (works for both MySQL and MariaDB)
+                // Error codes: 2006 (MySQL server has gone away), 2013 (Lost connection)
+                $isConnectionError = (
+                    $errorCode == 2006 || 
+                    $errorCode == 2013 ||
+                    strpos($errorMessage, '2006') !== false || 
+                    strpos($errorMessage, '2013') !== false ||
                     strpos($errorMessage, 'MySQL server has gone away') !== false ||
-                    strpos($errorMessage, 'Lost connection') !== false) {
-                    
-                    if ($retryCount < $maxRetries) {
-                        error_log("Database connection lost, retrying... (Attempt " . ($retryCount + 1) . "/{$maxRetries})");
-                        $this->connection = null; // Force reconnection
-                        $this->connect();
-                        $retryCount++;
-                        continue;
-                    }
+                    strpos($errorMessage, 'MariaDB server has gone away') !== false ||
+                    strpos($errorMessage, 'Lost connection') !== false ||
+                    strpos($errorMessage, 'Connection lost') !== false ||
+                    strpos($errorMessage, 'server has gone away') !== false
+                );
+                
+                if ($isConnectionError && $retryCount < $maxRetries) {
+                    error_log("Database connection lost, retrying... (Attempt " . ($retryCount + 1) . "/{$maxRetries})");
+                    $this->connection = null; // Force reconnection
+                    $this->connect();
+                    $retryCount++;
+                    continue;
                 }
                 
                 error_log("Database query error: " . $errorMessage);
